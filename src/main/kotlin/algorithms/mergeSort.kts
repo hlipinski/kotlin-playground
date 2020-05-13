@@ -1,5 +1,7 @@
 package algorithms
 
+import kotlin.random.Random
+
 fun mergeSort(arr: IntArray): IntArray {
     if (arr.size <= 1) return arr
 
@@ -9,14 +11,14 @@ fun mergeSort(arr: IntArray): IntArray {
     var i = 0
     var j = 0
     for (k in arr.indices) {
-        when {
-            j >= rightArr.size -> arr[k] = leftArr[i++]
-            i >= leftArr.size -> arr[k] = rightArr[j++]
-            leftArr[i] > rightArr[j] -> arr[k] = rightArr[j++]
-            else -> arr[k] = leftArr[i++]
+        arr[k] = when {
+            j >= rightArr.size -> leftArr[i++]
+            i >= leftArr.size -> rightArr[j++]
+            leftArr[i] > rightArr[j] -> rightArr[j++]
+            else -> leftArr[i++]
         }
     }
     return arr
 }
 
-mergeSort(intArrayOf(41,5,19,123,20,221,9,13,16,31)).contentToString()
+mergeSort(IntArray(10) { Random.nextInt(0, 100) }).contentToString()

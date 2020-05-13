@@ -1,5 +1,7 @@
 package algorithms
 
+import kotlin.random.Random
+
 fun insertionSort(arr: IntArray): IntArray {
     var arrSorted = arr
     val size = arr.size
@@ -21,4 +23,4 @@ fun swap(arr: IntArray, i: Int, j: Int): IntArray {
     return arr
 }
 
-insertionSort(intArrayOf(4,8,1,6,3)).contentToString()
+insertionSort(IntArray(10) { Random.nextInt(0, 100) }).contentToString()
