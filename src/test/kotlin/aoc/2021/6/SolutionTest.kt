@@ -10,13 +10,13 @@ class SolutionTest {
 
     @Test
     fun shouldSolve() {
-        assertThat(solution.solve(18)).isEqualTo(26);
-        assertThat(solution.solve(80)).isEqualTo(5934);
-        assertThat(solution.solve(256)).isEqualTo(26984457539);
+        assertThat(solution.solve(18)).isEqualTo(26)
+        assertThat(solution.solve(80)).isEqualTo(5934)
+        assertThat(solution.solve(256)).isEqualTo(26984457539)
     }
 
     @Test
-    fun shouldConvertToSet() {
+    fun shouldConvertToMap() {
         assertThat(solution.convertFile()).isEqualTo(
                 hashMapOf(Pair(1, BigInteger.ONE), Pair(2, BigInteger.ONE), Pair(3, BigInteger.valueOf(2)), Pair(4, BigInteger.ONE))
         )
