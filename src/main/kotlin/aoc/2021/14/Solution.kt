@@ -7,57 +7,61 @@ import kotlin.collections.HashMap
 
 fun main(args: Array<String>) {
     println("Part 1: ${Solution("input.txt").solve()}")
-//    println("Part 2: ${Solution2("input.txt").solve()}")
+    println("Part 2: ${Solution2("input.txt").solve()}")
 }
 
 class Solution2(fileName: String): Solution(fileName) {
     override fun solve(): BigInteger {
-        var list = initPolymer
+        var map = polymer
         IntRange(0, 39).forEach {
-            list = step(list)
+            map = step(map)
         }
-        return calculateResult(list)
+        return lettersMap.values.max()!!.minus(lettersMap.values.min()!!)
     }
 }
 
 open class Solution(fileName: String) {
 
     val file = File("aoc/2021/14", fileName)
-    val initPolymer = convertFileToInitPolymer()
-    val insertions = convertFileToInsertions()
     val lettersMap = hashMapOf<String, BigInteger>()
+    val polymer = convertFileToInitPolymer()
+    val insertions = convertFileToInsertions()
 
     open fun solve(): BigInteger {
-        var list = initPolymer
+        var map = polymer
         IntRange(0, 9).forEach {
-            list = step(list)
+            map = step(map)
         }
-        return calculateResult(list)
-    }
-
-    fun calculateResult(list: List<String>): BigInteger {
-        list.forEach { lettersMap[it] = lettersMap.getOrDefault(it, BigInteger.ZERO).add(BigInteger.ONE) }
         return lettersMap.values.max()!!.minus(lettersMap.values.min()!!)
     }
 
-    fun step(list: List<String>): List<String> {
-        val resultList = LinkedList<String>()
-        val iterator = list.iterator()
-        var first = iterator.next()
-        resultList.add(first)
-        while (iterator.hasNext()) {
-            val second = iterator.next()
-            val toInsert = insertions.getOrDefault("$first$second", "?")
-            if (toInsert != "?") resultList.add(toInsert)
-            resultList.add(second)
-            first = second
+    fun step(polymer: Map<String, BigInteger>): Map<String, BigInteger> {
+        val resultMap = hashMapOf<String, BigInteger>()
+        polymer.keys.forEach {
+            val toInsert = insertions.getOrDefault(it, "?")
+            if (toInsert != "?") {
+                resultMap["${it[0]}$toInsert"] = resultMap.getOrDefault("${it[0]}$toInsert", BigInteger.ZERO).plus(polymer.getOrDefault(it, BigInteger.ZERO))
+                resultMap["$toInsert${it[1]}"] = resultMap.getOrDefault("$toInsert${it[1]}", BigInteger.ZERO).plus(polymer.getOrDefault(it, BigInteger.ZERO))
+                lettersMap[toInsert] = lettersMap.getOrDefault(toInsert, BigInteger.ZERO).add(polymer.getOrDefault(it, BigInteger.ZERO))
+            } else {
+                resultMap[it] = resultMap.getOrDefault(it, BigInteger.ZERO).plus(BigInteger.ONE)
+            }
         }
-
-        return resultList
+        return resultMap
     }
 
-    fun convertFileToInitPolymer(): List<String> {
-        return file.readLines()[0].toList().map { it.toString() }
+    fun convertFileToInitPolymer(): Map<String, BigInteger> {
+        val resultMap = hashMapOf<String, BigInteger>()
+        val iterator = file.readLines()[0].toList().map { it.toString() }.iterator()
+        var first = iterator.next()
+        lettersMap[first] = BigInteger.ONE
+        while (iterator.hasNext()) {
+            val second = iterator.next()
+            resultMap["$first$second"] = resultMap.getOrDefault("$first$second", BigInteger.ZERO).plus(BigInteger.ONE)
+            lettersMap[second] = lettersMap.getOrDefault(second, BigInteger.ZERO).add(BigInteger.ONE)
+            first = second
+        }
+        return resultMap
     }
 
     fun convertFileToInsertions(): HashMap<String, String> {

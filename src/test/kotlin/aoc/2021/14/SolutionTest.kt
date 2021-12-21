@@ -22,8 +22,35 @@ class SolutionTest {
     }
 
     @Test
+    fun shouldCountLettersCorrectly() {
+        var map = solution.polymer
+        map = solution.step(map)
+        solution.step(map)
+
+        assertThat(solution.lettersMap).isEqualTo(hashMapOf(Pair("N", 2), Pair("C", 4), Pair("B", 6), Pair("H", 1)))
+    }
+
+    @Test
     fun shouldProcessStepCorrectly() {
-        assertThat(solution.step(listOf("N","N","C","B"))).containsExactly("N","C","N","B","C","H","B")
-        assertThat(solution.step(listOf("N","C","N","B","C","H","B"))).containsExactly("N","B","C","C","N","B","B","B","C","B","H","C","B")
+        assertThat(solution.step(
+                hashMapOf(Pair("NN", BigInteger.ONE), Pair("NC", BigInteger.ONE), Pair("CB", BigInteger.ONE)))
+        ).isEqualTo(
+                hashMapOf(
+                        Pair("NC", BigInteger.ONE), Pair("CN", BigInteger.ONE), Pair("NB", BigInteger.ONE),
+                        Pair("BC", BigInteger.ONE), Pair("CH", BigInteger.ONE), Pair("HB", BigInteger.ONE)
+                )
+        )
+        assertThat(solution.step(
+                hashMapOf(
+                        Pair("NC", BigInteger.ONE), Pair("CN", BigInteger.ONE), Pair("NB", BigInteger.ONE),
+                        Pair("BC", BigInteger.ONE), Pair("CH", BigInteger.ONE), Pair("HB", BigInteger.ONE)
+                )
+        )).isEqualTo(
+                hashMapOf(
+                        Pair("NB", BigInteger.TWO), Pair("BC", BigInteger.TWO), Pair("CC", BigInteger.ONE),
+                        Pair("CN", BigInteger.ONE), Pair("BB", BigInteger.TWO), Pair("CB", BigInteger.TWO),
+                        Pair("BH", BigInteger.ONE), Pair("HC", BigInteger.ONE)
+                )
+        )
     }
 }
