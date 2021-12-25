@@ -1,92 +1,101 @@
 package aoc.`2021`.`15`
 
 import java.io.File
+import java.util.*
 
 fun main(args: Array<String>) {
-    println("Part 1: ${Solution("input.txt").solve()}")
-//    println("Part 2: ${Solution2("input.txt").solve()}") 446
+//    println("Part 1: ${Solution("input.txt").solve()}")
+    println("Part 2: ${Solution2("input.txt").solve()}")
 }
 
 typealias Point = Pair<Int, Int>
 
+class Solution2(fileName: String): Solution(fileName) {
+    private val oldMaxBounds = Point(maxBounds.first + 1, maxBounds.second + 1)
+
+    override fun solve(): Int {
+        val start = System.currentTimeMillis()
+        enlargeCaves()
+        val solution = super.solve()
+        println("Execution time: ${System.currentTimeMillis() - start}")
+        return solution
+    }
+
+    private fun enlargeCaves() {
+        maxBounds = Point(oldMaxBounds.first * 5 - 1, oldMaxBounds.second * 5 - 1)
+    }
+
+    override fun getRiskLevel(point: Point): Int {
+        val rowFactor = if (point.first < oldMaxBounds.first) 0
+        else point.first / oldMaxBounds.first
+
+        val colFactor = if (point.second < oldMaxBounds.second) 0
+        else point.second / oldMaxBounds.second
+
+        return increaseRiskLevel(caves[Point(
+                point.first - oldMaxBounds.first * rowFactor,
+                point.second - oldMaxBounds.second * colFactor
+        )]!!, rowFactor + colFactor)
+    }
+
+    private fun increaseRiskLevel(oldRiskLvl: Int, factor: Int): Int {
+        val newRiskLvl = oldRiskLvl + factor
+        return if (newRiskLvl > 9) newRiskLvl - 9
+        else newRiskLvl
+    }
+}
+
 open class Solution(fileName: String) {
 
     val file = File("aoc/2021/15", fileName)
-    private val maxBounds = convertFileToMaxBounds()
+    var maxBounds = convertFileToMaxBounds()
     val caves = convertFileToCaves()
-    private var fastestPath = generateExamplePath()
-    val neighbours = generateNeighbours()
+    private val visited = hashSetOf<Point>()
+    private val queue = PriorityQueue<Pair<Point, Int>> { o1, o2 -> o1.second - o2.second }
 
-    open fun solve(): Int {
-        findPath()
-        return fastestPath
-    }
+    open fun solve(): Int = findPath()
 
-    fun findPath() {
-        println("fastestPath: $fastestPath")
-        goDeeper(Point(0, 0), hashSetOf(Point(0, 0)), 0)
-    }
+    fun findPath() = dijkstra(Point(0, 0), hashMapOf(Pair(Point(0, 0), 0)))
 
-    private fun goDeeper(step: Point, path: Set<Point>, pathValue: Int) {
-        if (pathValue + distanceFromEnd(step) >= fastestPath) return
-        if (step == Point(maxBounds.first, maxBounds.second)) {
-            fastestPath = pathValue
-            println("fastestPath: $fastestPath, steps: ${path.size}")
-            return
-        }
+    private tailrec fun dijkstra(step: Point, graph: HashMap<Point, Int>): Int {
+        if (step == Point(maxBounds.first, maxBounds.second)) return graph[step]!!
+        visited.add(step)
 
-        neighbours[step]!!
-                .filter { filterPaths(it, path) }
-                .sortedBy { caves[it] }
+        getNeighbours(step)
+                .filter { it !in visited }
+                .filter { it !in graph.keys }
                 .forEach {
-                    goDeeper(it, path + it, pathValue + caves[it]!!)
+                    val riskLevel = getRiskLevel(it)
+                    graph[it] = graph[step]!! + riskLevel
+                    queue.add(Pair(it, graph[step]!! + riskLevel))
                 }
+
+        return dijkstra(queue.poll().first, graph)
     }
 
-    open fun filterPaths(step: Point, path: Set<Point>): Boolean {
-        return step !in path || step == Point(maxBounds.first, maxBounds.second)
-    }
-
-    fun generateNeighbours(): HashMap<Point, List<Point>> {
-        val result = hashMapOf<Point, List<Point>>()
-        IntRange(0, maxBounds.first).forEach { row ->
-            IntRange(0, maxBounds.first).forEach {  col ->
-                val key = Point(row, col)
-                result[key] = getNeighbours(key)
-            } }
-        return result
-    }
+    open fun getRiskLevel(point: Point) = caves[point]!!
 
     private fun getNeighbours(key: Point): List<Point> = listOf(
-//            Point(key.first - 1, key.second),
-//            Point(key.first, key.second - 1),
+            Point(key.first - 1, key.second),
+            Point(key.first, key.second - 1),
             Point(key.first + 1, key.second),
             Point(key.first, key.second + 1)
     ).filter { it.first >= 0 && it.second >= 0 && it.first <= maxBounds.first && it.second <= maxBounds.second }
 
-    fun distanceFromEnd(key: Point): Int = maxBounds.first - key.first + maxBounds.second - key.second
-
-    private fun generateExamplePath(): Int {
-        var path = 0
-        IntRange(0, maxBounds.first).forEach { path += caves[Point(it, 0)]!! }
-        IntRange(0, maxBounds.second).forEach { path += caves[Point(0, it)]!! }
-        return path
-    }
-
-    fun convertFileToCaves(): HashMap<Point, Int> {
+    private fun convertFileToCaves(): HashMap<Point, Int> {
         val resultMap = hashMapOf<Point, Int>()
         file.readLines()
-                .forEachIndexed { colIdx, col ->
-                    col.toList()
+                .forEachIndexed { rowIdx, row ->
+                    row.toList()
                             .map { it.toString().toInt() }
-                            .forEachIndexed { rowIdx, row ->
-                                resultMap[Point(rowIdx, colIdx)] = row
+                            .forEachIndexed { colIdx, col ->
+                                resultMap[Point(rowIdx, colIdx)] = col
                             }
                 }
         return resultMap
     }
 
-    fun convertFileToMaxBounds(): Point {
+    private fun convertFileToMaxBounds(): Point {
         val lines = file.readLines()
         return Point(lines.size - 1, lines[0].length - 1)
     }
