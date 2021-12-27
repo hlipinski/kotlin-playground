@@ -3,6 +3,50 @@ package aoc.`2021`.`16`
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
+class Solution2Test {
+    private val solution = Solution2("test_input.txt")
+
+    @Test
+    fun shouldEvaluate_sum() {
+        assertThat(solution.calculate("C200B40A82")).isEqualTo(3)
+    }
+
+    @Test
+    fun shouldEvaluate_product() {
+        assertThat(solution.calculate("04005AC33890")).isEqualTo(54)
+    }
+
+    @Test
+    fun shouldEvaluate_min() {
+        assertThat(solution.calculate("880086C3E88112")).isEqualTo(7)
+    }
+
+    @Test
+    fun shouldEvaluate_max() {
+        assertThat(solution.calculate("CE00C43D881120")).isEqualTo(9)
+    }
+
+    @Test
+    fun shouldEvaluate_lt() {
+        assertThat(solution.calculate("D8005AC2A8F0")).isEqualTo(1)
+    }
+
+    @Test
+    fun shouldEvaluate_gt() {
+        assertThat(solution.calculate("F600BC2D8F")).isEqualTo(0)
+    }
+
+    @Test
+    fun shouldEvaluate_eq() {
+        assertThat(solution.calculate("9C005AC2F8F0")).isEqualTo(0)
+    }
+
+    @Test
+    fun shouldEvaluate_complex() {
+        assertThat(solution.calculate("9C0141080250320F1802104A08")).isEqualTo(1)
+    }
+}
+
 class SolutionTest {
     private val solution = Solution("test_input.txt")
 
@@ -52,17 +96,17 @@ class SolutionTest {
     }
 
     @Test
-    fun shouldConvertToPacket_Example_1() {
-        assertThat((solution.countVersions("8A004A801A8002F478"))).isEqualTo(16)
+    fun shouldCalculate_Example_1() {
+        assertThat((solution.calculate("8A004A801A8002F478"))).isEqualTo(16)
     }
 
     @Test
-    fun shouldConvertToPacket_Example_2() {
-        assertThat((solution.countVersions("620080001611562C8802118E34"))).isEqualTo(12)
+    fun shouldCalculate_Example_2() {
+        assertThat((solution.calculate("620080001611562C8802118E34"))).isEqualTo(12)
     }
 
     @Test
-    fun shouldConvertToPacket_Example_3() {
-        assertThat((solution.countVersions("C0015000016115A2E0802F182340"))).isEqualTo(23)
+    fun shouldCalculate_Example_3() {
+        assertThat((solution.calculate("C0015000016115A2E0802F182340"))).isEqualTo(23)
     }
 }

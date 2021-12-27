@@ -1,10 +1,48 @@
 package aoc.`2021`.`16`
 
 import java.io.File
+import kotlin.math.max
+import kotlin.math.min
 
 fun main(args: Array<String>) {
     println("Part 1: ${Solution("input.txt").solve()}")
-//    println("Part 2: ${Solution2("input.txt").solve()}")
+    println("Part 2: ${Solution2("input.txt").solve()}")
+}
+
+class Solution2(fileName: String): Solution(fileName) {
+
+    override fun solve(): Long = calculate(file.readLines()[0])
+
+    override fun calculate(message: String): Long {
+        val packet = convertPackets(message)
+        return evaluate(packet)
+    }
+
+    private fun evaluate(packet: Packet): Long {
+        return when (packet.type) {
+            0 -> (packet as OperatorPacket).packets.map { evaluate(it) }.reduce { acc, evaluation -> acc + evaluation }
+            1 -> (packet as OperatorPacket).packets.map { evaluate(it) }.reduce { acc, evaluation -> acc * evaluation }
+            2 -> (packet as OperatorPacket).packets.map { evaluate(it) }.reduce { acc, evaluation -> min(acc, evaluation) }
+            3 -> (packet as OperatorPacket).packets.map { evaluate(it) }.reduce { acc, evaluation -> max(acc, evaluation) }
+            4 -> (packet as LiteralPacket).number
+            5 -> {
+                val opPacket = packet as OperatorPacket
+                return if (evaluate(opPacket.packets[0]) > evaluate(opPacket.packets[1])) 1
+                else 0
+            }
+            6 -> {
+                val opPacket = packet as OperatorPacket
+                return if (evaluate(opPacket.packets[0]) < evaluate(opPacket.packets[1])) 1
+                else 0
+            }
+            7 -> {
+                val opPacket = packet as OperatorPacket
+                return if (evaluate(opPacket.packets[0]) == evaluate(opPacket.packets[1])) 1
+                else 0
+            }
+            else -> -1
+        }
+    }
 }
 
 open class Solution(fileName: String) {
@@ -12,9 +50,9 @@ open class Solution(fileName: String) {
     val file = File("aoc/2021/16", fileName)
     val dict = createDict()
 
-    open fun solve(): Int = countVersions(file.readLines()[0])
+    open fun solve(): Long = calculate(file.readLines()[0])
 
-    fun countVersions(message: String): Int {
+    open fun calculate(message: String): Long {
         val packet = convertPackets(message)
         return sumVersions(packet)
     }
@@ -24,9 +62,9 @@ open class Solution(fileName: String) {
         return PacketFactory.convertToPacket(binary)
     }
 
-    fun sumVersions(packet: Packet): Int {
-        if (packet is LiteralPacket) return packet.version
-        else if (packet is OperatorPacket) return packet.version + packet.packets.sumBy { sumVersions(it) }
+    fun sumVersions(packet: Packet): Long {
+        if (packet is LiteralPacket) return packet.version.toLong()
+        else if (packet is OperatorPacket) return packet.version + packet.packets.map { sumVersions(it) }.reduce { acc, i -> acc + i }
         return -1
     }
 
@@ -41,10 +79,10 @@ open class Solution(fileName: String) {
             )
 }
 
-data class LiteralPacket(override val version: Int, val type: Int, val number: Long, override var length: Int, override var rest: String?) : Packet(version, type, length, rest)
-data class OperatorPacket(override val version: Int, val type: Int, val lengthType: Int, val packets: List<Packet>, override var length: Int, override var rest: String?) : Packet(version, type, length, rest)
+data class LiteralPacket(override val version: Int, override val type: Int, val number: Long, override var length: Int, override var rest: String?) : Packet(version, type, length, rest)
+data class OperatorPacket(override val version: Int, override val type: Int, val lengthType: Int, val packets: List<Packet>, override var length: Int, override var rest: String?) : Packet(version, type, length, rest)
 
-open class Packet(open val version: Int, type: Int, open var length: Int, open var rest: String?)
+open class Packet(open val version: Int, open val type: Int, open var length: Int, open var rest: String?)
 
 object PacketFactory {
 
